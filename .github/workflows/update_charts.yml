@@ -4,7 +4,7 @@ on:
   schedule:
     - cron: "*/15 13-21 * * 1-5"   # Every 15 min, 9am-5pm ET (Mon-Fri)
     - cron: "0 14 * * 1-5"          # Once at market open
-  workflow_dispatch:                  # Manual trigger from GitHub UI
+  workflow_dispatch:                  # Manual trigger fhrom GitHub UI
 
 permissions:
   contents: write
@@ -22,7 +22,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: pip install alpaca-py pandas plotly python-dotenv requests
+        run: pip install alpaca-py pandas plotly python-dotenv requests pytz
 
       - name: Generate charts
         env:
