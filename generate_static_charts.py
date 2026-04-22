@@ -1,6 +1,6 @@
 """
 generate_static_charts.py — Generates a static index.html dashboard.
-Run by GitHub Actions every 15 minutes to update the live GitHub Pages site.
+Run by GitHub Actions every 5 minutes to update the live GitHub Pages site.
 """
 
 import os
@@ -101,39 +101,55 @@ def build_chart(symbol):
 
     trades = load_trades(symbol)
 
+    # Convert to plain Python lists to force standard JSON serialization.
+    # Plotly's binary encoding can fail to decode in some browser/CDN combinations,
+    # causing it to fall back to integer indices instead of actual values.
+    idx    = df.index.tolist()
+    open_  = df["open"].tolist()
+    high_  = df["high"].tolist()
+    low_   = df["low"].tolist()
+    close_ = df["close"].tolist()
+    vol_   = df["volume"].tolist()
+    ema5_  = df["ema5"].tolist()
+    ema8_  = df["ema8"].tolist()
+    ema9_  = df["ema9"].tolist()
+    ema12_ = df["ema12"].tolist()
+    ema34_ = df["ema34"].tolist()
+    ema50_ = df["ema50"].tolist()
+
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True,
         row_heights=[0.78, 0.22], vertical_spacing=0.02)
 
     fig.add_trace(go.Candlestick(
-        x=df.index, open=df["open"], high=df["high"],
-        low=df["low"], close=df["close"], name="Price",
+        x=idx, open=open_, high=high_,
+        low=low_, close=close_, name="Price",
         increasing_line_color="#3fb950", decreasing_line_color="#f85149",
     ), row=1, col=1)
 
     # Bias Cloud 34/50
-    fig.add_trace(go.Scatter(x=df.index, y=df["ema50"], fill=None, mode="lines",
+    fig.add_trace(go.Scatter(x=idx, y=ema50_, fill=None, mode="lines",
         line=dict(color="rgba(0,0,0,0)", width=0), showlegend=False), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df["ema34"], fill="tonexty",
+    fig.add_trace(go.Scatter(x=idx, y=ema34_, fill="tonexty",
         fillcolor="rgba(63,185,80,0.12)", mode="lines",
         line=dict(color="rgba(63,185,80,0.5)", width=1), name="Bias 34/50"), row=1, col=1)
 
     # Fast Cloud 5/12
-    fig.add_trace(go.Scatter(x=df.index, y=df["ema12"], fill=None, mode="lines",
+    fig.add_trace(go.Scatter(x=idx, y=ema12_, fill=None, mode="lines",
         line=dict(color="rgba(0,0,0,0)", width=0), showlegend=False), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df["ema5"], fill="tonexty",
+    fig.add_trace(go.Scatter(x=idx, y=ema5_, fill="tonexty",
         fillcolor="rgba(88,166,255,0.18)", mode="lines",
         line=dict(color="rgba(88,166,255,0.8)", width=1.5), name="Fast 5/12"), row=1, col=1)
 
     # Pullback Zone 8/9
-    fig.add_trace(go.Scatter(x=df.index, y=df["ema9"], fill=None, mode="lines",
+    fig.add_trace(go.Scatter(x=idx, y=ema9_, fill=None, mode="lines",
         line=dict(color="rgba(0,0,0,0)", width=0), showlegend=False), row=1, col=1)
-    fig.add_trace(go.Scatter(x=df.index, y=df["ema8"], fill="tonexty",
+    fig.add_trace(go.Scatter(x=idx, y=ema8_, fill="tonexty",
         fillcolor="rgba(255,163,61,0.15)", mode="lines",
         line=dict(color="rgba(255,163,61,0.7)", width=1), name="Pullback 8/9"), row=1, col=1)
 
     # Trade markers
     if not trades.empty:
-        for action, sym_marker, sym_color, pos in [
+        for action, sym_marker, sym_color, text_pos in [
             ("BUY", "triangle-up", "#3fb950", "bottom center"),
             ("SELL", "triangle-down", "#f85149", "top center")
         ]:
@@ -141,17 +157,17 @@ def build_chart(symbol):
             if not t_df.empty:
                 xs, ys = [], []
                 for _, row in t_df.iterrows():
-                    idx = df.index.get_indexer([row["timestamp"]], method="nearest")[0]
-                    xs.append(df.index[idx])
-                    ys.append(df["low"].iloc[idx]*0.998 if action=="BUY" else df["high"].iloc[idx]*1.002)
+                    bar_i = df.index.get_indexer([row["timestamp"]], method="nearest")[0]
+                    xs.append(df.index[bar_i])
+                    ys.append(df["low"].iloc[bar_i]*0.998 if action=="BUY" else df["high"].iloc[bar_i]*1.002)
                 fig.add_trace(go.Scatter(x=xs, y=ys, mode="markers+text",
                     marker=dict(symbol=sym_marker, size=14, color=sym_color),
-                    text=[action]*len(xs), textposition=pos,
+                    text=[action]*len(xs), textposition=text_pos,
                     textfont=dict(color=sym_color, size=9), name=action), row=1, col=1)
 
     # Volume
-    colors = ["#3fb950" if c >= o else "#f85149" for c, o in zip(df["close"], df["open"])]
-    fig.add_trace(go.Bar(x=df.index, y=df["volume"],
+    colors = ["#3fb950" if c >= o else "#f85149" for c, o in zip(close_, open_)]
+    fig.add_trace(go.Bar(x=idx, y=vol_,
         marker_color=colors, name="Volume", opacity=0.5), row=2, col=1)
 
     fig.update_layout(
