@@ -2,7 +2,7 @@ name: Update Live Charts
 
 on:
   schedule:
-    - cron: "*/15 13-21 * * 1-5"   # Every 15 min, 9am-5pm ET (Mon-Fri)
+    - cron: "*/5 13-21 * * 1-5"   # Every 5 min, 9am-5pm ET (Mon-Fri)
     - cron: "0 14 * * 1-5"          # Once at market open
   workflow_dispatch:                  # Manual trigger fhrom GitHub UI
 
