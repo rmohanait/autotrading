@@ -1,0 +1,40 @@
+name: Update Live Charts
+
+on:
+  schedule:
+    - cron: "*/15 13-21 * * 1-5"   # Every 15 min, 9am-5pm ET (Mon-Fri)
+    - cron: "0 14 * * 1-5"          # Once at market open
+  workflow_dispatch:                  # Manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install alpaca-py pandas plotly python-dotenv requests
+
+      - name: Generate charts
+        env:
+          ALPACA_API_KEY: ${{ secrets.ALPACA_API_KEY }}
+          ALPACA_SECRET_KEY: ${{ secrets.ALPACA_SECRET_KEY }}
+          ALPACA_BASE_URL: https://paper-api.alpaca.markets
+        run: python generate_static_charts.py
+
+      - name: Commit and push
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git diff --staged --quiet || git commit -m "Update charts $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push

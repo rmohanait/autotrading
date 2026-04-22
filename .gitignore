@@ -1,0 +1,10 @@
+﻿.env
+*.log
+*.db
+trades.db
+service.log
+ripster_trader.log
+chart_*.html
+__pycache__/
+*.pyc
+.env.*
