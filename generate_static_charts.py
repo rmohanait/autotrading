@@ -197,7 +197,7 @@ def generate():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="refresh" content="900">
+<meta http-equiv="refresh" content="300">
 <title>Ripster Trader — Live Charts</title>
 <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <style>
@@ -224,7 +224,7 @@ def generate():
   <h1>⚡ Ripster EMA Cloud — Live Dashboard</h1>
   <div style="display:flex;gap:12px;align-items:center">
     <span class="badge">● PAPER TRADING</span>
-    <span class="updated">Updated: {now} | Auto-refreshes every 15 min</span>
+    <span class="updated">Updated: {now} | Auto-refreshes every 5 min</span>
   </div>
 </div>
 <div class="tabs">{tabs}</div>
