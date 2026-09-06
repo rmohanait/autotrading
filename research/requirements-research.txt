@@ -1,0 +1,10 @@
+# Research harness dependencies (separate from the live bot's requirements.txt).
+# Install with:  pip install -r research/requirements-research.txt
+pandas>=2.0.0
+numpy>=1.24.0
+pyarrow>=14.0.0        # parquet for captured BigShort features
+tzdata>=2024.1         # zoneinfo data (US/Eastern) on minimal containers
+python-dotenv>=1.0.0   # reads the repo-root .env for Alpaca keys
+alpaca-py>=0.29.0      # real SPY/QQQ 5-min bars (Phase 2 baseline)
+# Optional — only needed for the Playwright capture reader:
+# playwright>=1.44.0

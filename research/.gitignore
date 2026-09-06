@@ -1,0 +1,6 @@
+# Never commit captured BigShort data (personal subscription data) or browser profiles.
+captured/*.csv
+captured/*.parquet
+.bs_profile/
+__pycache__/
+*.pyc
